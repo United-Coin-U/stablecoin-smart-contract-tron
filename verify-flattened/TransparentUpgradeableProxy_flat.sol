@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.22;
+
+// File: contracts/TransparentUpgradeableProxy.sol
 
 /**
  * @title TransparentUpgradeableProxy
@@ -14,7 +17,6 @@ contract TransparentUpgradeableProxy {
 
     event Upgraded(address indexed implementation);
     event AdminChanged(address oldAdmin, address newAdmin);
-
 
     /**
      * @dev Constructor: sets admin, implementation, and calls _data (initializer).
@@ -132,3 +134,4 @@ contract TransparentUpgradeableProxy {
         }
     }
 }
+

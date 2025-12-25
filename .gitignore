@@ -10,7 +10,8 @@ out/
 
 # Environment variables
 .env
-.env.local
+
+deployment/
 
 # build artifacts
 build/

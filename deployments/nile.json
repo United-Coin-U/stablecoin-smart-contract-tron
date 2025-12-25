@@ -1,0 +1,14 @@
+{
+  "proxyAdmin": "TVx5QJPxoGMmHzKsRnX9m49mgyBDpmAg5B",
+  "implementation": "TXdCsFEqGUdpAtYNneisKePoojWCbGsduQ",
+  "proxy": "TADK5CmykUHWqhLGgPpyaVGv3faSvhce65",
+  "deployer": "TKvCWxKrruxEGLQqH6oUNnJSBUC3VN7jaK",
+  "tokenName": "United Stables",
+  "tokenSymbol": "U",
+  "proxyType": "TransparentUpgradeableProxy + SafeProxyAdmin (OpenZeppelin)",
+  "version": "v3.0.0",
+  "security": "Based on OpenZeppelin v5.4.0",
+  "network": "nile",
+  "timestamp": "2025-12-25T12:44:43.492Z",
+  "date": "12/25/2025, 8:44:43 PM"
+}

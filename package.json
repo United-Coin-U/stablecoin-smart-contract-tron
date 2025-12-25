@@ -1,19 +1,26 @@
 {
-  "name": "tron-upgradeable",
+  "name": "stablecoin-smart-contract-tron",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "tronbox compile",
+    "test": "tronbox test",
+    "clean": "rm -rf build/",
+    "deploy:nile": "tronbox migrate --network nile --reset",
+    "deploy:shasta": "tronbox migrate --network shasta --reset",
+    "deploy:prod": "tronbox migrate --network prod --reset",
+    "flatten": "node scripts/flatten.js",
+    "flatten:all": "node scripts/flatten.js Stablecoin && node scripts/flatten.js ProxyAdmin && node scripts/flatten.js TransparentUpgradeableProxy"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Jim",
+  "license": "MIT",
   "description": "",
   "dependencies": {
-    "@openzeppelin/contracts": "^5.1.0",
-    "@openzeppelin/contracts-upgradeable": "^5.1.0",
-    "dotenv": "^16.4.7",
-    "tronbox": "^4.0.2",
-    "tronweb": "^6.0.0"
+    "@openzeppelin/contracts": "^5.4.0",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0",
+    "axios": "^1.13.2",
+    "dotenv": "^17.2.3",
+    "tronweb": "^6.0.4"
   }
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.22;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -14,21 +14,7 @@ contract ProxyAdmin is Ownable {
      * @dev Sets the deployer (msg.sender) as the initial owner 
      *      due to the older Ownable that needs a constructor parameter.
      */
-    constructor() Ownable(msg.sender) {
-        // The deployer is the initial owner.
-    }
-
-    /**
-     * @dev Upgrades the proxy to a new implementation.
-     * @param proxyAddress The TransparentUpgradeableProxy address.
-     * @param newImplementation The address of the new logic contract.
-     */
-    function upgrade(address proxyAddress, address newImplementation) external onlyOwner {
-        (bool success, ) = proxyAddress.call(
-            abi.encodeWithSignature("upgradeTo(address)", newImplementation)
-        );
-        require(success, "ProxyAdmin: upgrade call failed");
-    }
+    constructor(address initialOwner) Ownable(initialOwner) {}
 
     /**
      * @dev Allows the admin to call a function on the proxy (e.g. initializeV2()). Very unlikely.
@@ -55,5 +41,34 @@ contract ProxyAdmin is Ownable {
     function transferProxyAdminOwnership(address newOwner) external onlyOwner {
         require(newOwner != address(0), "ProxyAdmin: new owner is the zero address");
         transferOwnership(newOwner);  // Inherited from Ownable
+    }
+
+    /**
+     * @dev Upgrades the proxy to a new implementation.
+     * @param proxyAddress The TransparentUpgradeableProxy address.
+     * @param newImplementation The address of the new logic contract.
+     */
+    function upgrade(address proxyAddress, address newImplementation) external onlyOwner {
+        (bool success, ) = proxyAddress.call(
+            abi.encodeWithSignature("upgradeTo(address)", newImplementation)
+        );
+        require(success, "ProxyAdmin: upgrade call failed");
+    }
+    
+     /*
+     * @dev upgrade
+     * @param proxy 
+     * @param implementation 
+     * @param data 
+     */
+    function upgradeAndCall(
+        address proxy,
+        address implementation,
+        bytes memory data
+    ) public payable virtual onlyOwner {
+        (bool success, ) = proxy.call(
+            abi.encodeWithSignature("upgradeTo(address)", implementation, data)
+        );
+        require(success, "ProxyAdmin: upgradeAndCall call failed");
     }
 }
