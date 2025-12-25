@@ -16,3 +16,4 @@ out/
 deployment/
 
 # build artifacts
+build/
