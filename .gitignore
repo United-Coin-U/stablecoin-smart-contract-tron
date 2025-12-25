@@ -1,6 +1,8 @@
 # Dependencies
 node_modules/
 
+.vscode/
+
 # Next.js build output
 .next/
 out/
