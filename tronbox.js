@@ -3,7 +3,16 @@ require('dotenv').config();
 module.exports = {
   contracts_directory: './contracts',
   migrations_directory: './migrations',
+  test_directory: './tests',
   networks: {
+    // Default development network (used when no network is specified)
+    development: {
+      privateKey: process.env.PRIVATE_KEY_NILE,
+      consume_user_resource_percent: 50,
+      fee_limit: 1e9,
+      fullHost: process.env.FULL_NODE_NILE || "https://nile.trongrid.io",
+      network_id: '3448148188',
+    },
     prod: {
       privateKey: process.env.PRIVATE_KEY_PROD,
       consume_user_resource_percent: 30,

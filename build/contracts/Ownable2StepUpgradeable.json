@@ -1,0 +1,3352 @@
+{
+  "contractName": "Ownable2StepUpgradeable",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "InvalidInitialization",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotInitializing",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableInvalidOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "version",
+          "type": "uint64"
+        }
+      ],
+      "name": "Initialized",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "acceptOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pendingOwner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: MIT\n// OpenZeppelin Contracts (last updated v5.1.0) (access/Ownable2Step.sol)\n\npragma solidity ^0.8.20;\n\nimport {OwnableUpgradeable} from \"./OwnableUpgradeable.sol\";\nimport {Initializable} from \"../proxy/utils/Initializable.sol\";\n\n/**\n * @dev Contract module which provides access control mechanism, where\n * there is an account (an owner) that can be granted exclusive access to\n * specific functions.\n *\n * This extension of the {Ownable} contract includes a two-step mechanism to transfer\n * ownership, where the new owner must call {acceptOwnership} in order to replace the\n * old one. This can help prevent common mistakes, such as transfers of ownership to\n * incorrect accounts, or to contracts that are unable to interact with the\n * permission system.\n *\n * The initial owner is specified at deployment time in the constructor for `Ownable`. This\n * can later be changed with {transferOwnership} and {acceptOwnership}.\n *\n * This module is used through inheritance. It will make available all functions\n * from parent (Ownable).\n */\nabstract contract Ownable2StepUpgradeable is Initializable, OwnableUpgradeable {\n    /// @custom:storage-location erc7201:openzeppelin.storage.Ownable2Step\n    struct Ownable2StepStorage {\n        address _pendingOwner;\n    }\n\n    // keccak256(abi.encode(uint256(keccak256(\"openzeppelin.storage.Ownable2Step\")) - 1)) & ~bytes32(uint256(0xff))\n    bytes32 private constant Ownable2StepStorageLocation = 0x237e158222e3e6968b72b9db0d8043aacf074ad9f650f0d1606b4d82ee432c00;\n\n    function _getOwnable2StepStorage() private pure returns (Ownable2StepStorage storage $) {\n        assembly {\n            $.slot := Ownable2StepStorageLocation\n        }\n    }\n\n    event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);\n\n    function __Ownable2Step_init() internal onlyInitializing {\n    }\n\n    function __Ownable2Step_init_unchained() internal onlyInitializing {\n    }\n    /**\n     * @dev Returns the address of the pending owner.\n     */\n    function pendingOwner() public view virtual returns (address) {\n        Ownable2StepStorage storage $ = _getOwnable2StepStorage();\n        return $._pendingOwner;\n    }\n\n    /**\n     * @dev Starts the ownership transfer of the contract to a new account. Replaces the pending transfer if there is one.\n     * Can only be called by the current owner.\n     *\n     * Setting `newOwner` to the zero address is allowed; this can be used to cancel an initiated ownership transfer.\n     */\n    function transferOwnership(address newOwner) public virtual override onlyOwner {\n        Ownable2StepStorage storage $ = _getOwnable2StepStorage();\n        $._pendingOwner = newOwner;\n        emit OwnershipTransferStarted(owner(), newOwner);\n    }\n\n    /**\n     * @dev Transfers ownership of the contract to a new account (`newOwner`) and deletes any pending owner.\n     * Internal function without access restriction.\n     */\n    function _transferOwnership(address newOwner) internal virtual override {\n        Ownable2StepStorage storage $ = _getOwnable2StepStorage();\n        delete $._pendingOwner;\n        super._transferOwnership(newOwner);\n    }\n\n    /**\n     * @dev The new owner accepts the ownership transfer.\n     */\n    function acceptOwnership() public virtual {\n        address sender = _msgSender();\n        if (pendingOwner() != sender) {\n            revert OwnableUnauthorizedAccount(sender);\n        }\n        _transferOwnership(sender);\n    }\n}\n",
+  "sourcePath": "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol",
+  "ast": {
+    "absolutePath": "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol",
+    "exportedSymbols": {
+      "Initializable": [
+        1293
+      ],
+      "Ownable2StepUpgradeable": [
+        830
+      ],
+      "OwnableUpgradeable": [
+        1025
+      ]
+    },
+    "id": 831,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 695,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".20"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "107:24:1"
+      },
+      {
+        "absolutePath": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
+        "file": "./OwnableUpgradeable.sol",
+        "id": 697,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 831,
+        "sourceUnit": 1026,
+        "src": "133:60:1",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 696,
+              "name": "OwnableUpgradeable",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 1025,
+              "src": "141:18:1",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
+        "file": "../proxy/utils/Initializable.sol",
+        "id": 699,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 831,
+        "sourceUnit": 1294,
+        "src": "194:63:1",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 698,
+              "name": "Initializable",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 1293,
+              "src": "202:13:1",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "abstract": true,
+        "baseContracts": [
+          {
+            "baseName": {
+              "id": 701,
+              "name": "Initializable",
+              "nameLocations": [
+                "1115:13:1"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 1293,
+              "src": "1115:13:1"
+            },
+            "id": 702,
+            "nodeType": "InheritanceSpecifier",
+            "src": "1115:13:1"
+          },
+          {
+            "baseName": {
+              "id": 703,
+              "name": "OwnableUpgradeable",
+              "nameLocations": [
+                "1130:18:1"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 1025,
+              "src": "1130:18:1"
+            },
+            "id": 704,
+            "nodeType": "InheritanceSpecifier",
+            "src": "1130:18:1"
+          }
+        ],
+        "canonicalName": "Ownable2StepUpgradeable",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 700,
+          "nodeType": "StructuredDocumentation",
+          "src": "259:810:1",
+          "text": " @dev Contract module which provides access control mechanism, where\n there is an account (an owner) that can be granted exclusive access to\n specific functions.\n This extension of the {Ownable} contract includes a two-step mechanism to transfer\n ownership, where the new owner must call {acceptOwnership} in order to replace the\n old one. This can help prevent common mistakes, such as transfers of ownership to\n incorrect accounts, or to contracts that are unable to interact with the\n permission system.\n The initial owner is specified at deployment time in the constructor for `Ownable`. This\n can later be changed with {transferOwnership} and {acceptOwnership}.\n This module is used through inheritance. It will make available all functions\n from parent (Ownable)."
+        },
+        "fullyImplemented": true,
+        "id": 830,
+        "linearizedBaseContracts": [
+          830,
+          1025,
+          2006,
+          1293
+        ],
+        "name": "Ownable2StepUpgradeable",
+        "nameLocation": "1088:23:1",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "Ownable2StepUpgradeable.Ownable2StepStorage",
+            "documentation": {
+              "id": 705,
+              "nodeType": "StructuredDocumentation",
+              "src": "1155:70:1",
+              "text": "@custom:storage-location erc7201:openzeppelin.storage.Ownable2Step"
+            },
+            "id": 708,
+            "members": [
+              {
+                "constant": false,
+                "id": 707,
+                "mutability": "mutable",
+                "name": "_pendingOwner",
+                "nameLocation": "1275:13:1",
+                "nodeType": "VariableDeclaration",
+                "scope": 708,
+                "src": "1267:21:1",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 706,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1267:7:1",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "Ownable2StepStorage",
+            "nameLocation": "1237:19:1",
+            "nodeType": "StructDefinition",
+            "scope": 830,
+            "src": "1230:65:1",
+            "visibility": "public"
+          },
+          {
+            "constant": true,
+            "id": 711,
+            "mutability": "constant",
+            "name": "Ownable2StepStorageLocation",
+            "nameLocation": "1442:27:1",
+            "nodeType": "VariableDeclaration",
+            "scope": 830,
+            "src": "1417:121:1",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 709,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "1417:7:1",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": {
+              "hexValue": "307832333765313538323232653365363936386237326239646230643830343361616366303734616439663635306630643136303662346438326565343332633030",
+              "id": 710,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "1472:66:1",
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_16053720875717120191110171845200109550086765943194951757191984851604933389312_by_1",
+                "typeString": "int_const 1605...(69 digits omitted)...9312"
+              },
+              "value": "0x237e158222e3e6968b72b9db0d8043aacf074ad9f650f0d1606b4d82ee432c00"
+            },
+            "visibility": "private"
+          },
+          {
+            "body": {
+              "id": 718,
+              "nodeType": "Block",
+              "src": "1633:86:1",
+              "statements": [
+                {
+                  "AST": {
+                    "nativeSrc": "1652:61:1",
+                    "nodeType": "YulBlock",
+                    "src": "1652:61:1",
+                    "statements": [
+                      {
+                        "nativeSrc": "1666:37:1",
+                        "nodeType": "YulAssignment",
+                        "src": "1666:37:1",
+                        "value": {
+                          "name": "Ownable2StepStorageLocation",
+                          "nativeSrc": "1676:27:1",
+                          "nodeType": "YulIdentifier",
+                          "src": "1676:27:1"
+                        },
+                        "variableNames": [
+                          {
+                            "name": "$.slot",
+                            "nativeSrc": "1666:6:1",
+                            "nodeType": "YulIdentifier",
+                            "src": "1666:6:1"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "evmVersion": "shanghai",
+                  "externalReferences": [
+                    {
+                      "declaration": 715,
+                      "isOffset": false,
+                      "isSlot": true,
+                      "src": "1666:6:1",
+                      "suffix": "slot",
+                      "valueSize": 1
+                    },
+                    {
+                      "declaration": 711,
+                      "isOffset": false,
+                      "isSlot": false,
+                      "src": "1676:27:1",
+                      "valueSize": 1
+                    }
+                  ],
+                  "id": 717,
+                  "nodeType": "InlineAssembly",
+                  "src": "1643:70:1"
+                }
+              ]
+            },
+            "id": 719,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_getOwnable2StepStorage",
+            "nameLocation": "1554:23:1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 712,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1577:2:1"
+            },
+            "returnParameters": {
+              "id": 716,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 715,
+                  "mutability": "mutable",
+                  "name": "$",
+                  "nameLocation": "1630:1:1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 719,
+                  "src": "1602:29:1",
+                  "stateVariable": false,
+                  "storageLocation": "storage",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                    "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                  },
+                  "typeName": {
+                    "id": 714,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 713,
+                      "name": "Ownable2StepStorage",
+                      "nameLocations": [
+                        "1602:19:1"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 708,
+                      "src": "1602:19:1"
+                    },
+                    "referencedDeclaration": 708,
+                    "src": "1602:19:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                      "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1601:31:1"
+            },
+            "scope": 830,
+            "src": "1545:174:1",
+            "stateMutability": "pure",
+            "virtual": false,
+            "visibility": "private"
+          },
+          {
+            "anonymous": false,
+            "eventSelector": "38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700",
+            "id": 725,
+            "name": "OwnershipTransferStarted",
+            "nameLocation": "1731:24:1",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 724,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 721,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "previousOwner",
+                  "nameLocation": "1772:13:1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 725,
+                  "src": "1756:29:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 720,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1756:7:1",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 723,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "newOwner",
+                  "nameLocation": "1803:8:1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 725,
+                  "src": "1787:24:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 722,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1787:7:1",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1755:57:1"
+            },
+            "src": "1725:88:1"
+          },
+          {
+            "body": {
+              "id": 730,
+              "nodeType": "Block",
+              "src": "1876:7:1",
+              "statements": []
+            },
+            "id": 731,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 728,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 727,
+                  "name": "onlyInitializing",
+                  "nameLocations": [
+                    "1859:16:1"
+                  ],
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 1188,
+                  "src": "1859:16:1"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "1859:16:1"
+              }
+            ],
+            "name": "__Ownable2Step_init",
+            "nameLocation": "1828:19:1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 726,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1847:2:1"
+            },
+            "returnParameters": {
+              "id": 729,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1876:0:1"
+            },
+            "scope": 830,
+            "src": "1819:64:1",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 736,
+              "nodeType": "Block",
+              "src": "1956:7:1",
+              "statements": []
+            },
+            "id": 737,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 734,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 733,
+                  "name": "onlyInitializing",
+                  "nameLocations": [
+                    "1939:16:1"
+                  ],
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 1188,
+                  "src": "1939:16:1"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "1939:16:1"
+              }
+            ],
+            "name": "__Ownable2Step_init_unchained",
+            "nameLocation": "1898:29:1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 732,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1927:2:1"
+            },
+            "returnParameters": {
+              "id": 735,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1956:0:1"
+            },
+            "scope": 830,
+            "src": "1889:74:1",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 752,
+              "nodeType": "Block",
+              "src": "2100:106:1",
+              "statements": [
+                {
+                  "assignments": [
+                    745
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 745,
+                      "mutability": "mutable",
+                      "name": "$",
+                      "nameLocation": "2138:1:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 752,
+                      "src": "2110:29:1",
+                      "stateVariable": false,
+                      "storageLocation": "storage",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                        "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                      },
+                      "typeName": {
+                        "id": 744,
+                        "nodeType": "UserDefinedTypeName",
+                        "pathNode": {
+                          "id": 743,
+                          "name": "Ownable2StepStorage",
+                          "nameLocations": [
+                            "2110:19:1"
+                          ],
+                          "nodeType": "IdentifierPath",
+                          "referencedDeclaration": 708,
+                          "src": "2110:19:1"
+                        },
+                        "referencedDeclaration": 708,
+                        "src": "2110:19:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                          "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 748,
+                  "initialValue": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 746,
+                      "name": "_getOwnable2StepStorage",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 719,
+                      "src": "2142:23:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_pure$__$returns$_t_struct$_Ownable2StepStorage_$708_storage_ptr_$",
+                        "typeString": "function () pure returns (struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer)"
+                      }
+                    },
+                    "id": 747,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2142:25:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                      "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "2110:57:1"
+                },
+                {
+                  "expression": {
+                    "expression": {
+                      "id": 749,
+                      "name": "$",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 745,
+                      "src": "2184:1:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                        "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                      }
+                    },
+                    "id": 750,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberLocation": "2186:13:1",
+                    "memberName": "_pendingOwner",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 707,
+                    "src": "2184:15:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "functionReturnParameters": 742,
+                  "id": 751,
+                  "nodeType": "Return",
+                  "src": "2177:22:1"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 738,
+              "nodeType": "StructuredDocumentation",
+              "src": "1968:65:1",
+              "text": " @dev Returns the address of the pending owner."
+            },
+            "functionSelector": "e30c3978",
+            "id": 753,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "pendingOwner",
+            "nameLocation": "2047:12:1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 739,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2059:2:1"
+            },
+            "returnParameters": {
+              "id": 742,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 741,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 753,
+                  "src": "2091:7:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 740,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2091:7:1",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2090:9:1"
+            },
+            "scope": 830,
+            "src": "2038:168:1",
+            "stateMutability": "view",
+            "virtual": true,
+            "visibility": "public"
+          },
+          {
+            "baseFunctions": [
+              995
+            ],
+            "body": {
+              "id": 780,
+              "nodeType": "Block",
+              "src": "2603:168:1",
+              "statements": [
+                {
+                  "assignments": [
+                    764
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 764,
+                      "mutability": "mutable",
+                      "name": "$",
+                      "nameLocation": "2641:1:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 780,
+                      "src": "2613:29:1",
+                      "stateVariable": false,
+                      "storageLocation": "storage",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                        "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                      },
+                      "typeName": {
+                        "id": 763,
+                        "nodeType": "UserDefinedTypeName",
+                        "pathNode": {
+                          "id": 762,
+                          "name": "Ownable2StepStorage",
+                          "nameLocations": [
+                            "2613:19:1"
+                          ],
+                          "nodeType": "IdentifierPath",
+                          "referencedDeclaration": 708,
+                          "src": "2613:19:1"
+                        },
+                        "referencedDeclaration": 708,
+                        "src": "2613:19:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                          "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 767,
+                  "initialValue": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 765,
+                      "name": "_getOwnable2StepStorage",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 719,
+                      "src": "2645:23:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_pure$__$returns$_t_struct$_Ownable2StepStorage_$708_storage_ptr_$",
+                        "typeString": "function () pure returns (struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer)"
+                      }
+                    },
+                    "id": 766,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2645:25:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                      "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "2613:57:1"
+                },
+                {
+                  "expression": {
+                    "id": 772,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 768,
+                        "name": "$",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 764,
+                        "src": "2680:1:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                          "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                        }
+                      },
+                      "id": 770,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "2682:13:1",
+                      "memberName": "_pendingOwner",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 707,
+                      "src": "2680:15:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "id": 771,
+                      "name": "newOwner",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 756,
+                      "src": "2698:8:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "2680:26:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 773,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2680:26:1"
+                },
+                {
+                  "eventCall": {
+                    "arguments": [
+                      {
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "id": 775,
+                          "name": "owner",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 936,
+                          "src": "2746:5:1",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
+                            "typeString": "function () view returns (address)"
+                          }
+                        },
+                        "id": 776,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "nameLocations": [],
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "2746:7:1",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "id": 777,
+                        "name": "newOwner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 756,
+                        "src": "2755:8:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "id": 774,
+                      "name": "OwnershipTransferStarted",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 725,
+                      "src": "2721:24:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_address_$returns$__$",
+                        "typeString": "function (address,address)"
+                      }
+                    },
+                    "id": 778,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2721:43:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 779,
+                  "nodeType": "EmitStatement",
+                  "src": "2716:48:1"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 754,
+              "nodeType": "StructuredDocumentation",
+              "src": "2212:307:1",
+              "text": " @dev Starts the ownership transfer of the contract to a new account. Replaces the pending transfer if there is one.\n Can only be called by the current owner.\n Setting `newOwner` to the zero address is allowed; this can be used to cancel an initiated ownership transfer."
+            },
+            "functionSelector": "f2fde38b",
+            "id": 781,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 760,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 759,
+                  "name": "onlyOwner",
+                  "nameLocations": [
+                    "2593:9:1"
+                  ],
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 920,
+                  "src": "2593:9:1"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "2593:9:1"
+              }
+            ],
+            "name": "transferOwnership",
+            "nameLocation": "2533:17:1",
+            "nodeType": "FunctionDefinition",
+            "overrides": {
+              "id": 758,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "2584:8:1"
+            },
+            "parameters": {
+              "id": 757,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 756,
+                  "mutability": "mutable",
+                  "name": "newOwner",
+                  "nameLocation": "2559:8:1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 781,
+                  "src": "2551:16:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 755,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2551:7:1",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2550:18:1"
+            },
+            "returnParameters": {
+              "id": 761,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2603:0:1"
+            },
+            "scope": 830,
+            "src": "2524:247:1",
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "public"
+          },
+          {
+            "baseFunctions": [
+              1024
+            ],
+            "body": {
+              "id": 804,
+              "nodeType": "Block",
+              "src": "3027:150:1",
+              "statements": [
+                {
+                  "assignments": [
+                    790
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 790,
+                      "mutability": "mutable",
+                      "name": "$",
+                      "nameLocation": "3065:1:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 804,
+                      "src": "3037:29:1",
+                      "stateVariable": false,
+                      "storageLocation": "storage",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                        "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                      },
+                      "typeName": {
+                        "id": 789,
+                        "nodeType": "UserDefinedTypeName",
+                        "pathNode": {
+                          "id": 788,
+                          "name": "Ownable2StepStorage",
+                          "nameLocations": [
+                            "3037:19:1"
+                          ],
+                          "nodeType": "IdentifierPath",
+                          "referencedDeclaration": 708,
+                          "src": "3037:19:1"
+                        },
+                        "referencedDeclaration": 708,
+                        "src": "3037:19:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                          "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 793,
+                  "initialValue": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 791,
+                      "name": "_getOwnable2StepStorage",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 719,
+                      "src": "3069:23:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_pure$__$returns$_t_struct$_Ownable2StepStorage_$708_storage_ptr_$",
+                        "typeString": "function () pure returns (struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer)"
+                      }
+                    },
+                    "id": 792,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3069:25:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                      "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "3037:57:1"
+                },
+                {
+                  "expression": {
+                    "id": 796,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "UnaryOperation",
+                    "operator": "delete",
+                    "prefix": true,
+                    "src": "3104:22:1",
+                    "subExpression": {
+                      "expression": {
+                        "id": 794,
+                        "name": "$",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 790,
+                        "src": "3111:1:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                          "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                        }
+                      },
+                      "id": 795,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "3113:13:1",
+                      "memberName": "_pendingOwner",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 707,
+                      "src": "3111:15:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 797,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3104:22:1"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 801,
+                        "name": "newOwner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 784,
+                        "src": "3161:8:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "expression": {
+                        "id": 798,
+                        "name": "super",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 4294967271,
+                        "src": "3136:5:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_super$_Ownable2StepUpgradeable_$830_$",
+                          "typeString": "type(contract super Ownable2StepUpgradeable)"
+                        }
+                      },
+                      "id": 800,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "3142:18:1",
+                      "memberName": "_transferOwnership",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 1024,
+                      "src": "3136:24:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
+                        "typeString": "function (address)"
+                      }
+                    },
+                    "id": 802,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3136:34:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 803,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3136:34:1"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 782,
+              "nodeType": "StructuredDocumentation",
+              "src": "2777:173:1",
+              "text": " @dev Transfers ownership of the contract to a new account (`newOwner`) and deletes any pending owner.\n Internal function without access restriction."
+            },
+            "id": 805,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_transferOwnership",
+            "nameLocation": "2964:18:1",
+            "nodeType": "FunctionDefinition",
+            "overrides": {
+              "id": 786,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "3018:8:1"
+            },
+            "parameters": {
+              "id": 785,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 784,
+                  "mutability": "mutable",
+                  "name": "newOwner",
+                  "nameLocation": "2991:8:1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 805,
+                  "src": "2983:16:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 783,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2983:7:1",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2982:18:1"
+            },
+            "returnParameters": {
+              "id": 787,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3027:0:1"
+            },
+            "scope": 830,
+            "src": "2955:222:1",
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 828,
+              "nodeType": "Block",
+              "src": "3299:187:1",
+              "statements": [
+                {
+                  "assignments": [
+                    810
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 810,
+                      "mutability": "mutable",
+                      "name": "sender",
+                      "nameLocation": "3317:6:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 828,
+                      "src": "3309:14:1",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      },
+                      "typeName": {
+                        "id": 809,
+                        "name": "address",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "3309:7:1",
+                        "stateMutability": "nonpayable",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 813,
+                  "initialValue": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 811,
+                      "name": "_msgSender",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1988,
+                      "src": "3326:10:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
+                        "typeString": "function () view returns (address)"
+                      }
+                    },
+                    "id": 812,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3326:12:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "3309:29:1"
+                },
+                {
+                  "condition": {
+                    "commonType": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    },
+                    "id": 817,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "arguments": [],
+                      "expression": {
+                        "argumentTypes": [],
+                        "id": 814,
+                        "name": "pendingOwner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 753,
+                        "src": "3352:12:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
+                          "typeString": "function () view returns (address)"
+                        }
+                      },
+                      "id": 815,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "functionCall",
+                      "lValueRequested": false,
+                      "nameLocations": [],
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "3352:14:1",
+                      "tryCall": false,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "!=",
+                    "rightExpression": {
+                      "id": 816,
+                      "name": "sender",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 810,
+                      "src": "3370:6:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "3352:24:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 823,
+                  "nodeType": "IfStatement",
+                  "src": "3348:96:1",
+                  "trueBody": {
+                    "id": 822,
+                    "nodeType": "Block",
+                    "src": "3378:66:1",
+                    "statements": [
+                      {
+                        "errorCall": {
+                          "arguments": [
+                            {
+                              "id": 819,
+                              "name": "sender",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 810,
+                              "src": "3426:6:1",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            ],
+                            "id": 818,
+                            "name": "OwnableUnauthorizedAccount",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 861,
+                            "src": "3399:26:1",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_error_pure$_t_address_$returns$__$",
+                              "typeString": "function (address) pure"
+                            }
+                          },
+                          "id": 820,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "nameLocations": [],
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "3399:34:1",
+                          "tryCall": false,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_tuple$__$",
+                            "typeString": "tuple()"
+                          }
+                        },
+                        "id": 821,
+                        "nodeType": "RevertStatement",
+                        "src": "3392:41:1"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 825,
+                        "name": "sender",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 810,
+                        "src": "3472:6:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "id": 824,
+                      "name": "_transferOwnership",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        805
+                      ],
+                      "referencedDeclaration": 805,
+                      "src": "3453:18:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
+                        "typeString": "function (address)"
+                      }
+                    },
+                    "id": 826,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3453:26:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 827,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3453:26:1"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 806,
+              "nodeType": "StructuredDocumentation",
+              "src": "3183:69:1",
+              "text": " @dev The new owner accepts the ownership transfer."
+            },
+            "functionSelector": "79ba5097",
+            "id": 829,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "acceptOwnership",
+            "nameLocation": "3266:15:1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 807,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3281:2:1"
+            },
+            "returnParameters": {
+              "id": 808,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3299:0:1"
+            },
+            "scope": 830,
+            "src": "3257:229:1",
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "public"
+          }
+        ],
+        "scope": 831,
+        "src": "1070:2418:1",
+        "usedErrors": [
+          861,
+          866,
+          1042,
+          1045
+        ],
+        "usedEvents": [
+          725,
+          872,
+          1050
+        ]
+      }
+    ],
+    "src": "107:3382:1"
+  },
+  "legacyAST": {
+    "absolutePath": "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol",
+    "exportedSymbols": {
+      "Initializable": [
+        1293
+      ],
+      "Ownable2StepUpgradeable": [
+        830
+      ],
+      "OwnableUpgradeable": [
+        1025
+      ]
+    },
+    "id": 831,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 695,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".20"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "107:24:1"
+      },
+      {
+        "absolutePath": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
+        "file": "./OwnableUpgradeable.sol",
+        "id": 697,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 831,
+        "sourceUnit": 1026,
+        "src": "133:60:1",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 696,
+              "name": "OwnableUpgradeable",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 1025,
+              "src": "141:18:1",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
+        "file": "../proxy/utils/Initializable.sol",
+        "id": 699,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 831,
+        "sourceUnit": 1294,
+        "src": "194:63:1",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 698,
+              "name": "Initializable",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 1293,
+              "src": "202:13:1",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "abstract": true,
+        "baseContracts": [
+          {
+            "baseName": {
+              "id": 701,
+              "name": "Initializable",
+              "nameLocations": [
+                "1115:13:1"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 1293,
+              "src": "1115:13:1"
+            },
+            "id": 702,
+            "nodeType": "InheritanceSpecifier",
+            "src": "1115:13:1"
+          },
+          {
+            "baseName": {
+              "id": 703,
+              "name": "OwnableUpgradeable",
+              "nameLocations": [
+                "1130:18:1"
+              ],
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 1025,
+              "src": "1130:18:1"
+            },
+            "id": 704,
+            "nodeType": "InheritanceSpecifier",
+            "src": "1130:18:1"
+          }
+        ],
+        "canonicalName": "Ownable2StepUpgradeable",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 700,
+          "nodeType": "StructuredDocumentation",
+          "src": "259:810:1",
+          "text": " @dev Contract module which provides access control mechanism, where\n there is an account (an owner) that can be granted exclusive access to\n specific functions.\n This extension of the {Ownable} contract includes a two-step mechanism to transfer\n ownership, where the new owner must call {acceptOwnership} in order to replace the\n old one. This can help prevent common mistakes, such as transfers of ownership to\n incorrect accounts, or to contracts that are unable to interact with the\n permission system.\n The initial owner is specified at deployment time in the constructor for `Ownable`. This\n can later be changed with {transferOwnership} and {acceptOwnership}.\n This module is used through inheritance. It will make available all functions\n from parent (Ownable)."
+        },
+        "fullyImplemented": true,
+        "id": 830,
+        "linearizedBaseContracts": [
+          830,
+          1025,
+          2006,
+          1293
+        ],
+        "name": "Ownable2StepUpgradeable",
+        "nameLocation": "1088:23:1",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "Ownable2StepUpgradeable.Ownable2StepStorage",
+            "documentation": {
+              "id": 705,
+              "nodeType": "StructuredDocumentation",
+              "src": "1155:70:1",
+              "text": "@custom:storage-location erc7201:openzeppelin.storage.Ownable2Step"
+            },
+            "id": 708,
+            "members": [
+              {
+                "constant": false,
+                "id": 707,
+                "mutability": "mutable",
+                "name": "_pendingOwner",
+                "nameLocation": "1275:13:1",
+                "nodeType": "VariableDeclaration",
+                "scope": 708,
+                "src": "1267:21:1",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 706,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1267:7:1",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "Ownable2StepStorage",
+            "nameLocation": "1237:19:1",
+            "nodeType": "StructDefinition",
+            "scope": 830,
+            "src": "1230:65:1",
+            "visibility": "public"
+          },
+          {
+            "constant": true,
+            "id": 711,
+            "mutability": "constant",
+            "name": "Ownable2StepStorageLocation",
+            "nameLocation": "1442:27:1",
+            "nodeType": "VariableDeclaration",
+            "scope": 830,
+            "src": "1417:121:1",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 709,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "1417:7:1",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": {
+              "hexValue": "307832333765313538323232653365363936386237326239646230643830343361616366303734616439663635306630643136303662346438326565343332633030",
+              "id": 710,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "1472:66:1",
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_16053720875717120191110171845200109550086765943194951757191984851604933389312_by_1",
+                "typeString": "int_const 1605...(69 digits omitted)...9312"
+              },
+              "value": "0x237e158222e3e6968b72b9db0d8043aacf074ad9f650f0d1606b4d82ee432c00"
+            },
+            "visibility": "private"
+          },
+          {
+            "body": {
+              "id": 718,
+              "nodeType": "Block",
+              "src": "1633:86:1",
+              "statements": [
+                {
+                  "AST": {
+                    "nativeSrc": "1652:61:1",
+                    "nodeType": "YulBlock",
+                    "src": "1652:61:1",
+                    "statements": [
+                      {
+                        "nativeSrc": "1666:37:1",
+                        "nodeType": "YulAssignment",
+                        "src": "1666:37:1",
+                        "value": {
+                          "name": "Ownable2StepStorageLocation",
+                          "nativeSrc": "1676:27:1",
+                          "nodeType": "YulIdentifier",
+                          "src": "1676:27:1"
+                        },
+                        "variableNames": [
+                          {
+                            "name": "$.slot",
+                            "nativeSrc": "1666:6:1",
+                            "nodeType": "YulIdentifier",
+                            "src": "1666:6:1"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "evmVersion": "shanghai",
+                  "externalReferences": [
+                    {
+                      "declaration": 715,
+                      "isOffset": false,
+                      "isSlot": true,
+                      "src": "1666:6:1",
+                      "suffix": "slot",
+                      "valueSize": 1
+                    },
+                    {
+                      "declaration": 711,
+                      "isOffset": false,
+                      "isSlot": false,
+                      "src": "1676:27:1",
+                      "valueSize": 1
+                    }
+                  ],
+                  "id": 717,
+                  "nodeType": "InlineAssembly",
+                  "src": "1643:70:1"
+                }
+              ]
+            },
+            "id": 719,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_getOwnable2StepStorage",
+            "nameLocation": "1554:23:1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 712,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1577:2:1"
+            },
+            "returnParameters": {
+              "id": 716,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 715,
+                  "mutability": "mutable",
+                  "name": "$",
+                  "nameLocation": "1630:1:1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 719,
+                  "src": "1602:29:1",
+                  "stateVariable": false,
+                  "storageLocation": "storage",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                    "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                  },
+                  "typeName": {
+                    "id": 714,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 713,
+                      "name": "Ownable2StepStorage",
+                      "nameLocations": [
+                        "1602:19:1"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 708,
+                      "src": "1602:19:1"
+                    },
+                    "referencedDeclaration": 708,
+                    "src": "1602:19:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                      "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1601:31:1"
+            },
+            "scope": 830,
+            "src": "1545:174:1",
+            "stateMutability": "pure",
+            "virtual": false,
+            "visibility": "private"
+          },
+          {
+            "anonymous": false,
+            "eventSelector": "38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700",
+            "id": 725,
+            "name": "OwnershipTransferStarted",
+            "nameLocation": "1731:24:1",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 724,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 721,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "previousOwner",
+                  "nameLocation": "1772:13:1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 725,
+                  "src": "1756:29:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 720,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1756:7:1",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 723,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "newOwner",
+                  "nameLocation": "1803:8:1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 725,
+                  "src": "1787:24:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 722,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1787:7:1",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1755:57:1"
+            },
+            "src": "1725:88:1"
+          },
+          {
+            "body": {
+              "id": 730,
+              "nodeType": "Block",
+              "src": "1876:7:1",
+              "statements": []
+            },
+            "id": 731,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 728,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 727,
+                  "name": "onlyInitializing",
+                  "nameLocations": [
+                    "1859:16:1"
+                  ],
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 1188,
+                  "src": "1859:16:1"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "1859:16:1"
+              }
+            ],
+            "name": "__Ownable2Step_init",
+            "nameLocation": "1828:19:1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 726,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1847:2:1"
+            },
+            "returnParameters": {
+              "id": 729,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1876:0:1"
+            },
+            "scope": 830,
+            "src": "1819:64:1",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 736,
+              "nodeType": "Block",
+              "src": "1956:7:1",
+              "statements": []
+            },
+            "id": 737,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 734,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 733,
+                  "name": "onlyInitializing",
+                  "nameLocations": [
+                    "1939:16:1"
+                  ],
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 1188,
+                  "src": "1939:16:1"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "1939:16:1"
+              }
+            ],
+            "name": "__Ownable2Step_init_unchained",
+            "nameLocation": "1898:29:1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 732,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1927:2:1"
+            },
+            "returnParameters": {
+              "id": 735,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1956:0:1"
+            },
+            "scope": 830,
+            "src": "1889:74:1",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 752,
+              "nodeType": "Block",
+              "src": "2100:106:1",
+              "statements": [
+                {
+                  "assignments": [
+                    745
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 745,
+                      "mutability": "mutable",
+                      "name": "$",
+                      "nameLocation": "2138:1:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 752,
+                      "src": "2110:29:1",
+                      "stateVariable": false,
+                      "storageLocation": "storage",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                        "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                      },
+                      "typeName": {
+                        "id": 744,
+                        "nodeType": "UserDefinedTypeName",
+                        "pathNode": {
+                          "id": 743,
+                          "name": "Ownable2StepStorage",
+                          "nameLocations": [
+                            "2110:19:1"
+                          ],
+                          "nodeType": "IdentifierPath",
+                          "referencedDeclaration": 708,
+                          "src": "2110:19:1"
+                        },
+                        "referencedDeclaration": 708,
+                        "src": "2110:19:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                          "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 748,
+                  "initialValue": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 746,
+                      "name": "_getOwnable2StepStorage",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 719,
+                      "src": "2142:23:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_pure$__$returns$_t_struct$_Ownable2StepStorage_$708_storage_ptr_$",
+                        "typeString": "function () pure returns (struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer)"
+                      }
+                    },
+                    "id": 747,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2142:25:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                      "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "2110:57:1"
+                },
+                {
+                  "expression": {
+                    "expression": {
+                      "id": 749,
+                      "name": "$",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 745,
+                      "src": "2184:1:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                        "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                      }
+                    },
+                    "id": 750,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberLocation": "2186:13:1",
+                    "memberName": "_pendingOwner",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 707,
+                    "src": "2184:15:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "functionReturnParameters": 742,
+                  "id": 751,
+                  "nodeType": "Return",
+                  "src": "2177:22:1"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 738,
+              "nodeType": "StructuredDocumentation",
+              "src": "1968:65:1",
+              "text": " @dev Returns the address of the pending owner."
+            },
+            "functionSelector": "e30c3978",
+            "id": 753,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "pendingOwner",
+            "nameLocation": "2047:12:1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 739,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2059:2:1"
+            },
+            "returnParameters": {
+              "id": 742,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 741,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 753,
+                  "src": "2091:7:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 740,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2091:7:1",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2090:9:1"
+            },
+            "scope": 830,
+            "src": "2038:168:1",
+            "stateMutability": "view",
+            "virtual": true,
+            "visibility": "public"
+          },
+          {
+            "baseFunctions": [
+              995
+            ],
+            "body": {
+              "id": 780,
+              "nodeType": "Block",
+              "src": "2603:168:1",
+              "statements": [
+                {
+                  "assignments": [
+                    764
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 764,
+                      "mutability": "mutable",
+                      "name": "$",
+                      "nameLocation": "2641:1:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 780,
+                      "src": "2613:29:1",
+                      "stateVariable": false,
+                      "storageLocation": "storage",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                        "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                      },
+                      "typeName": {
+                        "id": 763,
+                        "nodeType": "UserDefinedTypeName",
+                        "pathNode": {
+                          "id": 762,
+                          "name": "Ownable2StepStorage",
+                          "nameLocations": [
+                            "2613:19:1"
+                          ],
+                          "nodeType": "IdentifierPath",
+                          "referencedDeclaration": 708,
+                          "src": "2613:19:1"
+                        },
+                        "referencedDeclaration": 708,
+                        "src": "2613:19:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                          "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 767,
+                  "initialValue": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 765,
+                      "name": "_getOwnable2StepStorage",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 719,
+                      "src": "2645:23:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_pure$__$returns$_t_struct$_Ownable2StepStorage_$708_storage_ptr_$",
+                        "typeString": "function () pure returns (struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer)"
+                      }
+                    },
+                    "id": 766,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2645:25:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                      "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "2613:57:1"
+                },
+                {
+                  "expression": {
+                    "id": 772,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 768,
+                        "name": "$",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 764,
+                        "src": "2680:1:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                          "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                        }
+                      },
+                      "id": 770,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "2682:13:1",
+                      "memberName": "_pendingOwner",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 707,
+                      "src": "2680:15:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "id": 771,
+                      "name": "newOwner",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 756,
+                      "src": "2698:8:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "2680:26:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 773,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2680:26:1"
+                },
+                {
+                  "eventCall": {
+                    "arguments": [
+                      {
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "id": 775,
+                          "name": "owner",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 936,
+                          "src": "2746:5:1",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
+                            "typeString": "function () view returns (address)"
+                          }
+                        },
+                        "id": 776,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "nameLocations": [],
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "2746:7:1",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "id": 777,
+                        "name": "newOwner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 756,
+                        "src": "2755:8:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "id": 774,
+                      "name": "OwnershipTransferStarted",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 725,
+                      "src": "2721:24:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_address_$returns$__$",
+                        "typeString": "function (address,address)"
+                      }
+                    },
+                    "id": 778,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2721:43:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 779,
+                  "nodeType": "EmitStatement",
+                  "src": "2716:48:1"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 754,
+              "nodeType": "StructuredDocumentation",
+              "src": "2212:307:1",
+              "text": " @dev Starts the ownership transfer of the contract to a new account. Replaces the pending transfer if there is one.\n Can only be called by the current owner.\n Setting `newOwner` to the zero address is allowed; this can be used to cancel an initiated ownership transfer."
+            },
+            "functionSelector": "f2fde38b",
+            "id": 781,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 760,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 759,
+                  "name": "onlyOwner",
+                  "nameLocations": [
+                    "2593:9:1"
+                  ],
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 920,
+                  "src": "2593:9:1"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "2593:9:1"
+              }
+            ],
+            "name": "transferOwnership",
+            "nameLocation": "2533:17:1",
+            "nodeType": "FunctionDefinition",
+            "overrides": {
+              "id": 758,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "2584:8:1"
+            },
+            "parameters": {
+              "id": 757,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 756,
+                  "mutability": "mutable",
+                  "name": "newOwner",
+                  "nameLocation": "2559:8:1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 781,
+                  "src": "2551:16:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 755,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2551:7:1",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2550:18:1"
+            },
+            "returnParameters": {
+              "id": 761,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2603:0:1"
+            },
+            "scope": 830,
+            "src": "2524:247:1",
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "public"
+          },
+          {
+            "baseFunctions": [
+              1024
+            ],
+            "body": {
+              "id": 804,
+              "nodeType": "Block",
+              "src": "3027:150:1",
+              "statements": [
+                {
+                  "assignments": [
+                    790
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 790,
+                      "mutability": "mutable",
+                      "name": "$",
+                      "nameLocation": "3065:1:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 804,
+                      "src": "3037:29:1",
+                      "stateVariable": false,
+                      "storageLocation": "storage",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                        "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                      },
+                      "typeName": {
+                        "id": 789,
+                        "nodeType": "UserDefinedTypeName",
+                        "pathNode": {
+                          "id": 788,
+                          "name": "Ownable2StepStorage",
+                          "nameLocations": [
+                            "3037:19:1"
+                          ],
+                          "nodeType": "IdentifierPath",
+                          "referencedDeclaration": 708,
+                          "src": "3037:19:1"
+                        },
+                        "referencedDeclaration": 708,
+                        "src": "3037:19:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                          "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 793,
+                  "initialValue": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 791,
+                      "name": "_getOwnable2StepStorage",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 719,
+                      "src": "3069:23:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_pure$__$returns$_t_struct$_Ownable2StepStorage_$708_storage_ptr_$",
+                        "typeString": "function () pure returns (struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer)"
+                      }
+                    },
+                    "id": 792,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3069:25:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                      "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "3037:57:1"
+                },
+                {
+                  "expression": {
+                    "id": 796,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "UnaryOperation",
+                    "operator": "delete",
+                    "prefix": true,
+                    "src": "3104:22:1",
+                    "subExpression": {
+                      "expression": {
+                        "id": 794,
+                        "name": "$",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 790,
+                        "src": "3111:1:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Ownable2StepStorage_$708_storage_ptr",
+                          "typeString": "struct Ownable2StepUpgradeable.Ownable2StepStorage storage pointer"
+                        }
+                      },
+                      "id": 795,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberLocation": "3113:13:1",
+                      "memberName": "_pendingOwner",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 707,
+                      "src": "3111:15:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 797,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3104:22:1"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 801,
+                        "name": "newOwner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 784,
+                        "src": "3161:8:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "expression": {
+                        "id": 798,
+                        "name": "super",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 4294967271,
+                        "src": "3136:5:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_super$_Ownable2StepUpgradeable_$830_$",
+                          "typeString": "type(contract super Ownable2StepUpgradeable)"
+                        }
+                      },
+                      "id": 800,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "3142:18:1",
+                      "memberName": "_transferOwnership",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 1024,
+                      "src": "3136:24:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
+                        "typeString": "function (address)"
+                      }
+                    },
+                    "id": 802,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3136:34:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 803,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3136:34:1"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 782,
+              "nodeType": "StructuredDocumentation",
+              "src": "2777:173:1",
+              "text": " @dev Transfers ownership of the contract to a new account (`newOwner`) and deletes any pending owner.\n Internal function without access restriction."
+            },
+            "id": 805,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_transferOwnership",
+            "nameLocation": "2964:18:1",
+            "nodeType": "FunctionDefinition",
+            "overrides": {
+              "id": 786,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "3018:8:1"
+            },
+            "parameters": {
+              "id": 785,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 784,
+                  "mutability": "mutable",
+                  "name": "newOwner",
+                  "nameLocation": "2991:8:1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 805,
+                  "src": "2983:16:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 783,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2983:7:1",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2982:18:1"
+            },
+            "returnParameters": {
+              "id": 787,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3027:0:1"
+            },
+            "scope": 830,
+            "src": "2955:222:1",
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 828,
+              "nodeType": "Block",
+              "src": "3299:187:1",
+              "statements": [
+                {
+                  "assignments": [
+                    810
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 810,
+                      "mutability": "mutable",
+                      "name": "sender",
+                      "nameLocation": "3317:6:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 828,
+                      "src": "3309:14:1",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      },
+                      "typeName": {
+                        "id": 809,
+                        "name": "address",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "3309:7:1",
+                        "stateMutability": "nonpayable",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 813,
+                  "initialValue": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 811,
+                      "name": "_msgSender",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1988,
+                      "src": "3326:10:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
+                        "typeString": "function () view returns (address)"
+                      }
+                    },
+                    "id": 812,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3326:12:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "3309:29:1"
+                },
+                {
+                  "condition": {
+                    "commonType": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    },
+                    "id": 817,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "arguments": [],
+                      "expression": {
+                        "argumentTypes": [],
+                        "id": 814,
+                        "name": "pendingOwner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 753,
+                        "src": "3352:12:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
+                          "typeString": "function () view returns (address)"
+                        }
+                      },
+                      "id": 815,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "functionCall",
+                      "lValueRequested": false,
+                      "nameLocations": [],
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "3352:14:1",
+                      "tryCall": false,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "!=",
+                    "rightExpression": {
+                      "id": 816,
+                      "name": "sender",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 810,
+                      "src": "3370:6:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "3352:24:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 823,
+                  "nodeType": "IfStatement",
+                  "src": "3348:96:1",
+                  "trueBody": {
+                    "id": 822,
+                    "nodeType": "Block",
+                    "src": "3378:66:1",
+                    "statements": [
+                      {
+                        "errorCall": {
+                          "arguments": [
+                            {
+                              "id": 819,
+                              "name": "sender",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 810,
+                              "src": "3426:6:1",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            ],
+                            "id": 818,
+                            "name": "OwnableUnauthorizedAccount",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 861,
+                            "src": "3399:26:1",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_error_pure$_t_address_$returns$__$",
+                              "typeString": "function (address) pure"
+                            }
+                          },
+                          "id": 820,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "nameLocations": [],
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "3399:34:1",
+                          "tryCall": false,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_tuple$__$",
+                            "typeString": "tuple()"
+                          }
+                        },
+                        "id": 821,
+                        "nodeType": "RevertStatement",
+                        "src": "3392:41:1"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 825,
+                        "name": "sender",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 810,
+                        "src": "3472:6:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "id": 824,
+                      "name": "_transferOwnership",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        805
+                      ],
+                      "referencedDeclaration": 805,
+                      "src": "3453:18:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_address_$returns$__$",
+                        "typeString": "function (address)"
+                      }
+                    },
+                    "id": 826,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3453:26:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 827,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3453:26:1"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 806,
+              "nodeType": "StructuredDocumentation",
+              "src": "3183:69:1",
+              "text": " @dev The new owner accepts the ownership transfer."
+            },
+            "functionSelector": "79ba5097",
+            "id": 829,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "acceptOwnership",
+            "nameLocation": "3266:15:1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 807,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3281:2:1"
+            },
+            "returnParameters": {
+              "id": 808,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3299:0:1"
+            },
+            "scope": 830,
+            "src": "3257:229:1",
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "public"
+          }
+        ],
+        "scope": 831,
+        "src": "1070:2418:1",
+        "usedErrors": [
+          861,
+          866,
+          1042,
+          1045
+        ],
+        "usedEvents": [
+          725,
+          872,
+          1050
+        ]
+      }
+    ],
+    "src": "107:3382:1"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.22+commit.5ed3e10f.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.1",
+  "updatedAt": "2025-12-28T14:36:22.245Z"
+}

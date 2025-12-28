@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.DS_Store
 
 .vscode/
 
@@ -13,7 +14,8 @@ out/
 # Environment variables
 .env
 
-deployment/
+deployments/
 
-# build artifacts
-build/
+cache/
+.claude/
+

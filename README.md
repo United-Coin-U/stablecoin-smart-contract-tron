@@ -67,3 +67,20 @@ After deployment, you will see addresses of the deployed contracts:
 1. ProxyAdmin at some Tron address
 2. Stablecoin at some Tron address
 3. TransparentUpgradeableProxy at some Tron address
+
+
+## Test Contract :
+
+### Test without deployment
+```bash
+  npm run test:stablecoin
+  npm run test:proxy
+  npm run test:all
+```
+
+### Test with deployment
+
+```bash
+  npm run test                     
+  tronbox test
+```

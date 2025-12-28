@@ -15,60 +15,91 @@ contract ProxyAdmin is Ownable {
      *      due to the older Ownable that needs a constructor parameter.
      */
     constructor(address initialOwner) Ownable(initialOwner) {}
-
     /**
-     * @dev Allows the admin to call a function on the proxy (e.g. initializeV2()). Very unlikely.
-     * @param proxyAddress The proxy that will receive the call.
-     * @param data The encoded function call data.
-     */
-    function callProxy(address proxyAddress, bytes calldata data)
-        external
-        onlyOwner
-        returns (bytes memory)
-    {
-        (bool success, bytes memory result) = proxyAddress.call(data);
-        require(success, "ProxyAdmin: callProxy failed");
-        return result;
-    }
-
-    /**
-     * @dev Explicit function for transferring the ownership
-     *      of this ProxyAdmin contract to a new account.
-     *      This calls the inherited Ownable's transferOwnership(...)
+     * @dev Returns the current implementation of `proxy`.
      *
-     * @param newOwner The address of the new owner
+     * NOTE: This function must use low-level staticcall because when ProxyAdmin
+     * (as the admin) calls the proxy contract, the transparent proxy pattern
+     * would normally prevent the call. We use staticcall with the exact function
+     * selector to bypass this restriction.
      */
-    function transferProxyAdminOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "ProxyAdmin: new owner is the zero address");
-        transferOwnership(newOwner);  // Inherited from Ownable
+    function getProxyImplementation(address proxy) public view virtual returns (address) {
+        // bytes4(keccak256("implementation()")) == 0x5c60da1b
+        (bool success, bytes memory returndata) = address(proxy).staticcall(hex"5c60da1b");
+        require(success, "ProxyAdmin: implementation call failed");
+        return abi.decode(returndata, (address));
     }
 
     /**
-     * @dev Upgrades the proxy to a new implementation.
-     * @param proxyAddress The TransparentUpgradeableProxy address.
-     * @param newImplementation The address of the new logic contract.
+     * @dev Returns the current admin of `proxy`.
+     *
+     * NOTE: This function must use low-level staticcall because when ProxyAdmin
+     * (as the admin) calls the proxy contract, the transparent proxy pattern
+     * would normally prevent the call. We use staticcall with the exact function
+     * selector to bypass this restriction.
      */
-    function upgrade(address proxyAddress, address newImplementation) external onlyOwner {
-        (bool success, ) = proxyAddress.call(
-            abi.encodeWithSignature("upgradeTo(address)", newImplementation)
-        );
-        require(success, "ProxyAdmin: upgrade call failed");
+    function getProxyAdmin(address proxy) public view virtual returns (address) {
+        // bytes4(keccak256("admin()")) == 0xf851a440
+        (bool success, bytes memory returndata) = address(proxy).staticcall(hex"f851a440");
+        require(success, "ProxyAdmin: admin call failed");
+        return abi.decode(returndata, (address));
     }
-    
-     /*
-     * @dev upgrade
-     * @param proxy 
-     * @param implementation 
-     * @param data 
+
+    /**
+     * @dev Changes the admin of `proxy` to `newAdmin`.
+     *
+     * Requirements:
+     *
+     * - This contract must be the current admin of `proxy`.
+     */
+    function changeProxyAdmin(address proxy, address newAdmin) public virtual onlyOwner {
+        // Call changeAdmin on the proxy using low-level call
+        (bool success, ) = proxy.call(
+            abi.encodeWithSignature("changeAdmin(address)", newAdmin)
+        );
+        require(success, "ProxyAdmin: changeAdmin call failed");
+    }
+
+    /**
+     * @dev Upgrades `proxy` to `implementation`. See {TransparentUpgradeableProxy-upgradeTo}.
+     *
+     * Requirements:
+     *
+     * - This contract must be the admin of `proxy`.
+     */
+    function upgrade(address proxy, address implementation) public virtual onlyOwner {
+        (bool success, ) = proxy.call(
+            abi.encodeWithSignature("upgradeTo(address)", implementation)
+        );
+        require(success, "ProxyAdmin: upgradeTo call failed");
+    }
+
+    /**
+     * @dev Upgrades `proxy` to `implementation` and calls a function on the new implementation.
+     *
+     * This function performs two steps:
+     * 1. Upgrades the proxy to the new implementation
+     * 2. If data is provided, calls the specified function on the proxy
+     *
+     * Requirements:
+     *
+     * - This contract must be the admin of `proxy`.
      */
     function upgradeAndCall(
         address proxy,
         address implementation,
         bytes memory data
     ) public payable virtual onlyOwner {
-        (bool success, ) = proxy.call(
-            abi.encodeWithSignature("upgradeTo(address)", implementation, data)
+        // Step 1: Upgrade to new implementation
+        (bool success1, ) = proxy.call(
+            abi.encodeWithSignature("upgradeTo(address)", implementation)
         );
-        require(success, "ProxyAdmin: upgradeAndCall call failed");
+        require(success1, "ProxyAdmin: upgradeTo call failed");
+
+        // Step 2: If data is provided, call the function on the proxy
+        if (data.length > 0) {
+            (bool success2, bytes memory returndata) = proxy.call{value: msg.value}(data);
+            require(success2, string(returndata));
+        }
     }
 }

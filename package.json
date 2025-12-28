@@ -5,6 +5,9 @@
   "scripts": {
     "compile": "tronbox compile",
     "test": "tronbox test",
+    "test:stablecoin": "node tests/TestStablecoin.js",
+    "test:proxy": "node tests/TestProxy.js",
+    "test:all": "npm run test:stablecoin && npm run test:proxy",
     "clean": "rm -rf build/",
     "deploy:nile": "tronbox migrate --network nile --reset",
     "deploy:shasta": "tronbox migrate --network shasta --reset",
