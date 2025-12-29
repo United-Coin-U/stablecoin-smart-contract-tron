@@ -39,11 +39,11 @@ contract TransparentUpgradeableProxy {
     }
 
     // Optional: expose admin for external read
-    function admin() external view onlyAdmin() returns (address) {
+    function admin() external view returns (address) {
         return _admin();
     }
 
-    function implementation() external view onlyAdmin() returns (address) {
+    function implementation() external view returns (address) {
         return _implementation();
     }
 
