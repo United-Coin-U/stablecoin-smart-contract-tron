@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.22;
 
+import "./lib/Address.sol";
 /**
  * @title TransparentUpgradeableProxy
  * @dev A minimal EIP1967 transparent upgradeable proxy:
@@ -38,15 +39,15 @@ contract TransparentUpgradeableProxy {
     }
 
     // Optional: expose admin for external read
-    function admin() external view returns (address) {
+    function admin() external view onlyAdmin() returns (address) {
         return _admin();
     }
 
-    function implementation() external view returns (address) {
+    function implementation() external view onlyAdmin() returns (address) {
         return _implementation();
     }
 
-    function changeAdmin(address newAdmin) external onlyAdmin {
+    function changeAdmin(address newAdmin) external virtual onlyAdmin {
         require(newAdmin != address(0), "zero admin");
         address old = _admin();
         _setAdmin(newAdmin);
@@ -56,10 +57,24 @@ contract TransparentUpgradeableProxy {
     /**
      * @dev Admin-only function to upgrade the implementation.
      */
-    function upgradeTo(address newImplementation) external {
+    function upgradeTo(address newImplementation) external onlyAdmin() {
         require(msg.sender == _admin(), "TransparentUpgradeableProxy: caller is not admin");
         _setImplementation(newImplementation);
         emit Upgraded(newImplementation);
+    }
+
+    /**
+     * @dev Admin-only function to upgrade the implementation and call data.
+     */
+    function upgradeToAndCall(address newImplementation, bytes calldata data) external payable onlyAdmin() {
+        require(msg.sender == _admin(), "TransparentUpgradeableProxy: caller is not admin");
+        _setImplementation(newImplementation);
+        emit Upgraded(newImplementation);
+
+           // Step 2: If data is provided, call the function on the proxy
+        if (data.length > 0) {
+            Address.functionDelegateCall(newImplementation, data);
+        }
     }
 
     /**

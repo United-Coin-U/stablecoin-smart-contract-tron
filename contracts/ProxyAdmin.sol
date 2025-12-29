@@ -25,7 +25,7 @@ contract ProxyAdmin is Ownable {
      */
     function getProxyImplementation(address proxy) public view virtual returns (address) {
         // bytes4(keccak256("implementation()")) == 0x5c60da1b
-        (bool success, bytes memory returndata) = address(proxy).staticcall(hex"5c60da1b");
+        (bool success, bytes memory returndata) = proxy.staticcall(hex"5c60da1b");
         require(success, "ProxyAdmin: implementation call failed");
         return abi.decode(returndata, (address));
     }
@@ -40,7 +40,7 @@ contract ProxyAdmin is Ownable {
      */
     function getProxyAdmin(address proxy) public view virtual returns (address) {
         // bytes4(keccak256("admin()")) == 0xf851a440
-        (bool success, bytes memory returndata) = address(proxy).staticcall(hex"f851a440");
+        (bool success, bytes memory returndata) = proxy.staticcall(hex"f851a440");
         require(success, "ProxyAdmin: admin call failed");
         return abi.decode(returndata, (address));
     }
@@ -85,21 +85,10 @@ contract ProxyAdmin is Ownable {
      *
      * - This contract must be the admin of `proxy`.
      */
-    function upgradeAndCall(
-        address proxy,
-        address implementation,
-        bytes memory data
-    ) public payable virtual onlyOwner {
-        // Step 1: Upgrade to new implementation
-        (bool success1, ) = proxy.call(
-            abi.encodeWithSignature("upgradeTo(address)", implementation)
+    function upgradeAndCall(address proxy, address implementation, bytes memory data) public payable virtual onlyOwner {
+          (bool success, ) = proxy.call(
+            abi.encodeWithSignature("upgradeToAndCall(address,bytes)", implementation, data)
         );
-        require(success1, "ProxyAdmin: upgradeTo call failed");
-
-        // Step 2: If data is provided, call the function on the proxy
-        if (data.length > 0) {
-            (bool success2, bytes memory returndata) = proxy.call{value: msg.value}(data);
-            require(success2, string(returndata));
-        }
+        require(success, "ProxyAdmin: upgradeAndCall call failed");
     }
 }
