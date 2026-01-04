@@ -18,3 +18,5 @@ deployments/
 
 cache/
 .claude/
+
+build/
