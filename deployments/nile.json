@@ -1,14 +1,14 @@
 {
-  "proxyAdmin": "TVx5QJPxoGMmHzKsRnX9m49mgyBDpmAg5B",
-  "implementation": "TXdCsFEqGUdpAtYNneisKePoojWCbGsduQ",
-  "proxy": "TADK5CmykUHWqhLGgPpyaVGv3faSvhce65",
+  "proxyAdmin": "TYeNfjeqanGHx8jtB1LHCvnRpWfTDdjUbi",
+  "implementation": "TThAEYFpeQSA2qaTVanipSq9xtieCpKNoG",
+  "proxy": "TVhrRBJvyUWVh5okLboWi5obYG9aoASrR1",
   "deployer": "TKvCWxKrruxEGLQqH6oUNnJSBUC3VN7jaK",
-  "tokenName": "United Stables",
-  "tokenSymbol": "U",
+  "tokenName": "United Coin",
+  "tokenSymbol": "NINGU",
   "proxyType": "TransparentUpgradeableProxy + SafeProxyAdmin (OpenZeppelin)",
   "version": "v3.0.0",
   "security": "Based on OpenZeppelin v5.4.0",
   "network": "nile",
-  "timestamp": "2025-12-25T12:44:43.492Z",
-  "date": "12/25/2025, 8:44:43 PM"
+  "timestamp": "2026-01-02T02:29:09.084Z",
+  "date": "1/2/2026, 10:29:09 AM"
 }

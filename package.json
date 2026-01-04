@@ -17,7 +17,7 @@
     "flatten:all": "node scripts/flatten.js Stablecoin && node scripts/flatten.js ProxyAdmin && node scripts/flatten.js TransparentUpgradeableProxy"
   },
   "keywords": [],
-  "author": "Jim",
+  "author": "SML",
   "license": "MIT",
   "description": "",
   "dependencies": {

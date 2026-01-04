@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.22;
+pragma solidity ^0.8.25;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "./RescuableToken.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PausableUpgradeable.sol";
 
-
-contract Stablecoin is ERC20Upgradeable, Ownable2StepUpgradeable, ERC20PausableUpgradeable {
+contract Stablecoin is RescuableToken, ERC20PermitUpgradeable, Ownable2StepUpgradeable, ERC20PausableUpgradeable {
 
     error CallerNotAutoOwner(address caller);
     error NotAllowedAddress(address addr);
     error FrozenAddress(address addr);
     error InvalidNonce(uint256 nonce);
+    error InvalidChainId(uint256 chainId);
     error InvalidAmount(uint256 amount);
     error MintLimitExceeded(uint256 amount, uint256 limit);
    
@@ -28,6 +29,7 @@ contract Stablecoin is ERC20Upgradeable, Ownable2StepUpgradeable, ERC20PausableU
     mapping(address => bool) public frozen;
 
     uint256 public nonce;
+    uint256 public chainId;
     address public autoOwner;
     uint256 public autoMintMaxLimit;
 
@@ -49,9 +51,20 @@ contract Stablecoin is ERC20Upgradeable, Ownable2StepUpgradeable, ERC20PausableU
     function initialize(string memory _name, string memory _symbol, address _initOwner) public initializer {
         __Context_init();
         __ERC20_init(_name, _symbol);
+        __ERC20Permit_init(_name);
         __Ownable_init(_initOwner); // v5 requires initial owner address
         __Pausable_init();
         __AutoOwnerInit(_initOwner);
+
+        chainId = block.chainid;
+    }
+
+   /**
+     * @dev Implementation of RescuableToken's _getRescueOwner
+     * Returns the contract owner from Ownable2StepUpgradeable
+     */
+    function _getRescueOwner() internal view override returns (address) {
+        return owner();
     }
 
    /**
@@ -119,7 +132,7 @@ contract Stablecoin is ERC20Upgradeable, Ownable2StepUpgradeable, ERC20PausableU
      * @return True if successful
      * Can only be called by the current owner.
      */
-    function mint(address to, uint256 amount) external whenNotPaused notFrozen(to) onlyOwner returns (bool) {
+    function mint(address to, uint256 amount) external notFrozen(to) onlyOwner returns (bool) {
         _mint(to, amount);
         emit Mint(_msgSender(), to, amount);
         return true;
@@ -130,13 +143,15 @@ contract Stablecoin is ERC20Upgradeable, Ownable2StepUpgradeable, ERC20PausableU
      * @param to Destination address
      * @param amount Mint amount
      * @param seq nonce
+     * @param chainIdParam chain id
      * @return True if successful
      * Can only be called by the current auto owner.
      */
-    function autoMint(address to, uint256 amount, uint256 seq) external whenNotPaused notFrozen(to) onlyAutoOwner returns (bool) {
+    function autoMint(address to, uint256 amount, uint256 seq, uint256 chainIdParam) external whenNotPaused() notFrozen(to) onlyAutoOwner returns (bool) {
         if(seq != nonce) revert InvalidNonce(seq);
-        if(amount == 0) revert InvalidAmount(amount);  
-        if(autoMintMaxLimit < amount) revert MintLimitExceeded(amount, autoMintMaxLimit);
+        if(chainIdParam != chainId) revert InvalidChainId(chainIdParam);
+        if(amount == 0) revert InvalidAmount(amount);
+        if(amount > autoMintMaxLimit) revert MintLimitExceeded(amount, autoMintMaxLimit);
         nonce++;
         _mint(to, amount);
         emit Mint(_msgSender(), to, amount);
@@ -160,17 +175,19 @@ contract Stablecoin is ERC20Upgradeable, Ownable2StepUpgradeable, ERC20PausableU
      * @dev See {ERC20-_burn}.
      * @param amount Burn amount
      * @param seq nonce
+     * @param chainIdParam chain id
      * @return True if successful
      * Can only be called by the current auto owner.
      */
-    function autoBurn(uint256 amount, uint256 seq) external whenNotPaused onlyAutoOwner returns (bool) {
+    function autoBurn(uint256 amount, uint256 seq, uint256 chainIdParam) external whenNotPaused() onlyAutoOwner returns (bool) {
         if(seq != nonce) revert InvalidNonce(seq);
-        if(amount == 0) revert InvalidAmount(amount);
+        if(chainIdParam != chainId) revert InvalidChainId(chainIdParam);
+        if(amount == 0) revert InvalidAmount(amount);  
         nonce++;
-        address contractOwner = owner();
-        _burn(contractOwner, amount);
-        emit Burn(autoOwner, contractOwner, amount);
-        emit AutoBurn(autoOwner, contractOwner, seq, amount);
+        address owner = owner();
+        _burn(owner, amount);
+        emit Burn(autoOwner, owner, amount);
+        emit AutoBurn(autoOwner,owner, seq, amount);
         return true;
     }
     

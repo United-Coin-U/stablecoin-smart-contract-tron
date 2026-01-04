@@ -18,7 +18,7 @@ module.exports = {
       consume_user_resource_percent: 30,
       fee_limit: 1e10, // Increased to 10000 TRX for deployment
       fullHost: process.env.FULL_NODE_PROD,
-      network_id: "1" // Tron mainnet
+      network_id: "728126428" // TRON Mainnet ChainID (0x2b6653dc)
     },
     nile: {
       privateKey: process.env.PRIVATE_KEY_NILE,
@@ -44,7 +44,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: "0.8.22",
+      version: "0.8.25",
       settings: {
         optimizer: {
           enabled: true, // Optional optimization settings
