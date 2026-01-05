@@ -4,7 +4,7 @@ pragma solidity ^0.8.25;
 
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 /**
- * @title EIP3009 + ERC7598
+ * @title EIP3009
  * @dev Abstract contract that implements EIP-3009: Transfer With Authorization
  *
  * EIP-3009 allows users to transfer tokens via signed authorizations, enabling
@@ -21,7 +21,7 @@ import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
  *
  * Reference: https://eips.ethereum.org/EIPS/eip-3009
  */
-abstract contract ERC7598 {
+abstract contract EIP3009Token {
 
     // EIP-712 type hashes
     bytes32 public constant TRANSFER_WITH_AUTHORIZATION_TYPEHASH = keccak256(
@@ -39,28 +39,28 @@ abstract contract ERC7598 {
     // Mapping of authorizer => nonce => state (true if used or cancelled)
     mapping(address => mapping(bytes32 => bool)) private _authorizationStates;
 
-    bool public erc7598EnableFlag;
+    bool public eip3009EnableFlag;
 
     // Events
     event AuthorizationUsed(address indexed authorizer, bytes32 indexed nonce);
     event AuthorizationCanceled(address indexed authorizer, bytes32 indexed nonce);
-    event ERC7598Enabled();
-    event ERC7598Disabled();
+    event EIP3009Enabled();
+    event EIP3009Disabled();
 
     /**
-     * @dev Modifier to check if ERC-7598 is enabled
+     * @dev Modifier to check if EIP-3009 is enabled
      */
-    modifier erc7598Enabled() {
-        require(erc7598EnableFlag, "ERC-7598 is not enabled");
+    modifier eip3009Enabled() {
+        require(eip3009EnableFlag, "EIP-3009 is not enabled");
         _;
     }
 
     /**
      * @dev Internal modifier to check if caller is owner
-     * Uses the _getERC7598Owner() function that must be implemented by inheriting contract
+     * Uses the _getEIP3009Owner() function that must be implemented by inheriting contract
      */
-    modifier onlyERC7598Owner() {
-        require(msg.sender == _getERC7598Owner(), "RescuableToken: caller is not the owner");
+    modifier onlyEIP3009Owner() {
+        require(msg.sender == _getEIP3009Owner(), "EIP3009Token: caller is not the owner");
         _;
     }
 
@@ -68,26 +68,26 @@ abstract contract ERC7598 {
      * @dev Internal function to get the owner address
      * Must be implemented by inheriting contract
      */
-    function _getERC7598Owner() internal view virtual returns (address);
+    function _getEIP3009Owner() internal view virtual returns (address);
 
     /**
-    *  @dev enable erc7598 support
+    *  @dev enable eip3009 support
      * Can only be called by the owner.
      */
-    function enableERC7598() external {
-        require(msg.sender == _getERC7598Owner(), "Caller is not the owner");
-        emit ERC7598Enabled();
-        erc7598EnableFlag = true;
+    function enableEIP3009() external {
+        require(msg.sender == _getEIP3009Owner(), "Caller is not the owner");
+        emit EIP3009Enabled();
+        eip3009EnableFlag = true;
     }
 
     /**
-    *  @dev disable erc7598 support
+    *  @dev disable eip3009 support
      * Can only be called by the owner.
      */
-    function disableERC7598() external {
-        require(msg.sender == _getERC7598Owner(), "Caller is not the owner");
-        emit ERC7598Disabled();
-        erc7598EnableFlag = false;
+    function disableEIP3009() external {
+        require(msg.sender == _getEIP3009Owner(), "Caller is not the owner");
+        emit EIP3009Disabled();
+        eip3009EnableFlag = false;
     }
 
     /**
@@ -114,7 +114,7 @@ abstract contract ERC7598 {
     ) internal virtual;
 
     /**
-     * @dev Execute a transfer with an authorization signature, backward-compatible with the ERC-3009 standard.
+     * @dev Execute a transfer with an authorization signature, backward-compatible with the EIP-3009 standard.
      * @param from Payer's address (Authorizer)
      * @param to Payee's address
      * @param value Amount to transfer
@@ -131,12 +131,12 @@ abstract contract ERC7598 {
         uint256 validBefore,
         bytes32 nonce,
         bytes memory signature
-    ) external erc7598Enabled {
+    ) external eip3009Enabled {
         _transferOrReceiveWithAuthorization(TRANSFER_WITH_AUTHORIZATION_TYPEHASH, from, to, value, validAfter, validBefore, nonce, signature);
     }
 
     /**
-     * @dev Execute a transfer with an authorization signature (EIP-7598)
+     * @dev Execute a transfer with an authorization signature (EIP-3009)
      * @param from Payer's address (Authorizer)
      * @param to Payee's address
      * @param value Amount to transfer
@@ -157,7 +157,7 @@ abstract contract ERC7598 {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external erc7598Enabled {
+    ) external eip3009Enabled {
         _transferOrReceiveWithAuthorization(TRANSFER_WITH_AUTHORIZATION_TYPEHASH, from, to, value, validAfter, validBefore, nonce, abi.encodePacked(r, s, v));
     }
 
@@ -186,7 +186,7 @@ abstract contract ERC7598 {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external erc7598Enabled {
+    ) external eip3009Enabled {
         require(msg.sender == to, "Caller must be the payee");
         _transferOrReceiveWithAuthorization(RECEIVE_WITH_AUTHORIZATION_TYPEHASH, from, to, value, validAfter, validBefore, nonce, abi.encodePacked(r, s, v));
     }
@@ -212,7 +212,7 @@ abstract contract ERC7598 {
         uint256 validBefore,
         bytes32 nonce,
         bytes memory signature
-    ) external erc7598Enabled {
+    ) external eip3009Enabled {
         require(msg.sender == to, "Caller must be the payee");
         _transferOrReceiveWithAuthorization(RECEIVE_WITH_AUTHORIZATION_TYPEHASH, from, to, value, validAfter, validBefore, nonce, signature);
     }
@@ -229,7 +229,7 @@ abstract contract ERC7598 {
     }
 
     /**
-     * @dev Execute a transfer with an authorization signature (ERC-7598)
+     * @dev Execute a transfer with an authorization signature (EIP-3009)
      * @param from Payer's address (Authorizer)
      * @param to Payee's address
      * @param value Amount to transfer

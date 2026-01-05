@@ -3,12 +3,12 @@
 pragma solidity ^0.8.25;
 
 import "./RescuableToken.sol";
-import "./ERC7598.sol";
+import "./EIP3009Token.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PausableUpgradeable.sol";
 
-contract Stablecoin is RescuableToken, ERC7598, ERC20PermitUpgradeable, Ownable2StepUpgradeable, ERC20PausableUpgradeable {
+contract Stablecoin is RescuableToken, EIP3009Token, ERC20PermitUpgradeable, Ownable2StepUpgradeable, ERC20PausableUpgradeable {
 
     error CallerNotAutoOwner(address caller);
     error NotAllowedAddress(address addr);
@@ -69,7 +69,7 @@ contract Stablecoin is RescuableToken, ERC7598, ERC20PermitUpgradeable, Ownable2
     }
 
    /**
-     * @dev Implementation of ERC7598's _getDomainSeparator
+     * @dev Implementation of EIP712's _getDomainSeparator
      * Returns the EIP-712 domain separator from ERC20Permit
      */
     function _getDomainSeparator() internal view override returns (bytes32) {
@@ -77,18 +77,18 @@ contract Stablecoin is RescuableToken, ERC7598, ERC20PermitUpgradeable, Ownable2
     }
 
    /**
-     * @dev Implementation of ERC7598's _hashTypedDataV4
+     * @dev Implementation of EIP3009's _hashTypedDataV4
      * Returns the EIP-712 typed data hash from EIP712Upgradeable
      */
-    function _hashTypedDataV4(bytes32 structHash) internal view override(EIP712Upgradeable, ERC7598) returns (bytes32) {
+    function _hashTypedDataV4(bytes32 structHash) internal view override(EIP712Upgradeable, EIP3009Token) returns (bytes32) {
         return EIP712Upgradeable._hashTypedDataV4(structHash);
     }
 
    /**
-     * @dev Implementation of ERC7598's _getEIP7598Owner
-     * Returns the contract owner who can manage ERC-7598 settings
+     * @dev Implementation of EIP3009's _getEIP3009Owner
+     * Returns the contract owner who can manage EIP-3009 settings
      */
-    function _getERC7598Owner() internal view override returns (address) {
+    function _getEIP3009Owner() internal view override returns (address) {
         return owner();
     }
 

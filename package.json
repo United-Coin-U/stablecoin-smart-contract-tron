@@ -11,7 +11,7 @@
     "test:control": "node tests/test-account-control.js",
     "test:rescue": "node tests/test-rescuable.js",
     "test:tip712": "node tests/test-tip712.js",
-    "test:erc7598": "node tests/test-erc7598.js",
+    "test:eip3009": "node tests/test-eip3009.js",
     "encode:init": "node tests/EncodeInitData.js",
     "clean": "rm -rf build/",
     "deploy:nile": "tronbox migrate --network nile --reset",

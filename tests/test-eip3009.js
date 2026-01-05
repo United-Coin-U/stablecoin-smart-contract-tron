@@ -1,8 +1,8 @@
 /**
- * Test ERC7598 (EIP-3009) (Tests 25-34)
+ * Test EIP-3009 (Tests 25-34)
  *
  * EIP-3009: Transfer With Authorization tests:
- * 25. Enable/Disable ERC7598
+ * 25. Enable/Disable EIP3009
  * 26. Check authorization state
  * 27. Transfer with authorization (bytes signature)
  * 28. Transfer with authorization (v,r,s signature)
@@ -19,7 +19,7 @@ const { ethers } = require('ethers');
 const StablecoinArtifact = require('../build/contracts/Stablecoin.json');
 
 async function main() {
-  console.log(`\n=== ERC7598 (EIP-3009) Tests (Network: ${network}) ===\n`);
+  console.log(`\n=== EIP-3009 Tests (Network: ${network}) ===\n`);
 
   const results = new TestResults();
   const { stablecoin, proxyAddress, deployerBase58 } = await getContractInstance();
@@ -149,34 +149,34 @@ async function main() {
   }
 
   // -----------------------------------------------------------
-  // Test 25: Enable/Disable ERC7598
+  // Test 25: Enable/Disable EIP3009
   // -----------------------------------------------------------
-  console.log("📋 Test 25: Enable/Disable ERC7598");
+  console.log("📋 Test 25: Enable/Disable EIP3009");
   try {
     // Check initial state
-    const initialState = await stablecoin.erc7598EnableFlag().call();
-    console.log("   Initial ERC7598 state:", initialState);
+    const initialState = await stablecoin.eip3009EnableFlag().call();
+    console.log("   Initial EIP3009 state:", initialState);
 
-    // Enable ERC7598
-    console.log("   Enabling ERC7598...");
-    await stablecoin.enableERC7598().send({
+    // Enable EIP3009
+    console.log("   Enabling EIP3009...");
+    await stablecoin.enableEIP3009().send({
       feeLimit: 100_000_000,
       shouldPollResponse: true
     });
     await sleep(3000);
 
-    const enabledState = await stablecoin.erc7598EnableFlag().call();
+    const enabledState = await stablecoin.eip3009EnableFlag().call();
     console.log("   After enable:", enabledState);
 
     if (enabledState === true) {
-      console.log("   ✅ ERC7598 enabled successfully");
-      results.pass("Test 25: Enable/Disable ERC7598");
+      console.log("   ✅ EIP3009 enabled successfully");
+      results.pass("Test 25: Enable/Disable EIP3009");
     } else {
-      throw new Error("Failed to enable ERC7598");
+      throw new Error("Failed to enable EIP3009");
     }
   } catch (err) {
     console.log("   Error:", err.message);
-    results.fail("Test 25: Enable/Disable ERC7598", err);
+    results.fail("Test 25: Enable/Disable EIP3009", err);
   }
 
   // Ensure we have some tokens for testing
@@ -636,17 +636,17 @@ async function main() {
   // -----------------------------------------------------------
   console.log("\n📋 Test 34: Access Control and Integration");
   try {
-    console.log("   Testing that ERC7598 requires enabled flag...");
+    console.log("   Testing that EIP3009 requires enabled flag...");
 
-    // Disable ERC7598
-    await stablecoin.disableERC7598().send({
+    // Disable EIP3009
+    await stablecoin.disableEIP3009().send({
       feeLimit: 100_000_000,
       shouldPollResponse: true
     });
     await sleep(3000);
 
-    const disabledState = await stablecoin.erc7598EnableFlag().call();
-    console.log("   ERC7598 disabled:", disabledState === false);
+    const disabledState = await stablecoin.eip3009EnableFlag().call();
+    console.log("   EIP3009 disabled:", disabledState === false);
 
     // Try to use transferWithAuthorization while disabled
     const transferAmount = 10_000000;
@@ -678,14 +678,14 @@ async function main() {
         shouldPollResponse: true
       });
 
-      throw new Error("Should have failed when ERC7598 is disabled");
+      throw new Error("Should have failed when EIP3009 is disabled");
     } catch (disabledErr) {
       if (disabledErr.message.includes("not enabled") ||
           disabledErr.message.includes("REVERT")) {
         console.log("   ✅ Correctly rejected when disabled");
 
         // Re-enable for cleanup
-        await stablecoin.enableERC7598().send({
+        await stablecoin.enableEIP3009().send({
           feeLimit: 100_000_000,
           shouldPollResponse: true
         });
