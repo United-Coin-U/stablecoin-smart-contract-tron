@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.22;
+pragma solidity ^0.8.25;
 
 import "./lib/Address.sol";
 /**
@@ -127,6 +127,7 @@ contract TransparentUpgradeableProxy {
     }
 
     function _setImplementation(address newImplementation) private {
+        require(Address.isContract(newImplementation), "ERC1967: new implementation is not a contract");
         bytes32 slot = _IMPLEMENTATION_SLOT;
         assembly {
             sstore(slot, newImplementation)

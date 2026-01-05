@@ -192,7 +192,7 @@ module.exports = async function (deployer, network, accounts) {
     const deploymentFile = saveDeployment(network, deploymentData);
 
   } catch (error) {
-    console.error('\n❌ 部署失败:', error.message);
+    console.error('\n❌ Deployment failed:', error.message);
     console.error(error);
     throw error;
   }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.22;
+pragma solidity ^0.8.25;
 
 import "./Stablecoin.sol";
 
@@ -10,7 +10,12 @@ import "./Stablecoin.sol";
  */
 contract StablecoinV2 is Stablecoin {
 
-    function versionV2() public pure returns (string memory) {
+    /**
+     * @dev Returns the version of the contract.
+     * Overrides the parent contract's version.
+     * @return Version string
+     */
+    function version() public pure override returns (string memory) {
         return "v2";
     }
 
