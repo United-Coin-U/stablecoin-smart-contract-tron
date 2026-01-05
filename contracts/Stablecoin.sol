@@ -3,11 +3,12 @@
 pragma solidity ^0.8.25;
 
 import "./RescuableToken.sol";
+import "./ERC7598.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PausableUpgradeable.sol";
 
-contract Stablecoin is RescuableToken, ERC20PermitUpgradeable, Ownable2StepUpgradeable, ERC20PausableUpgradeable {
+contract Stablecoin is RescuableToken, ERC7598, ERC20PermitUpgradeable, Ownable2StepUpgradeable, ERC20PausableUpgradeable {
 
     error CallerNotAutoOwner(address caller);
     error NotAllowedAddress(address addr);
@@ -65,6 +66,42 @@ contract Stablecoin is RescuableToken, ERC20PermitUpgradeable, Ownable2StepUpgra
      */
     function _getRescueOwner() internal view override returns (address) {
         return owner();
+    }
+
+   /**
+     * @dev Implementation of ERC7598's _getDomainSeparator
+     * Returns the EIP-712 domain separator from ERC20Permit
+     */
+    function _getDomainSeparator() internal view override returns (bytes32) {
+        return _domainSeparatorV4();
+    }
+
+   /**
+     * @dev Implementation of ERC7598's _hashTypedDataV4
+     * Returns the EIP-712 typed data hash from EIP712Upgradeable
+     */
+    function _hashTypedDataV4(bytes32 structHash) internal view override(EIP712Upgradeable, ERC7598) returns (bytes32) {
+        return EIP712Upgradeable._hashTypedDataV4(structHash);
+    }
+
+   /**
+     * @dev Implementation of ERC7598's _getEIP7598Owner
+     * Returns the contract owner who can manage ERC-7598 settings
+     */
+    function _getERC7598Owner() internal view override returns (address) {
+        return owner();
+    }
+
+   /**
+     * @dev Implementation of ERC7598's _executeAuthorizedTransfer
+     * Performs the actual token transfer for authorized transfers
+     */
+    function _executeAuthorizedTransfer(
+        address from,
+        address to,
+        uint256 value
+    ) internal override whenNotPaused notFrozen(from) notFrozen(to) {
+        _transfer(from, to, value);
     }
 
    /**
@@ -266,6 +303,15 @@ contract Stablecoin is RescuableToken, ERC20PermitUpgradeable, Ownable2StepUpgra
         _spendAllowance(from, spender, amount);
         _transfer(from, to, amount);
         return true;
+    }
+
+    /**
+     * @dev Returns the version of the contract.
+     * This can be overridden in upgraded versions.
+     * @return Version string
+     */
+    function version() public pure virtual returns (string memory) {
+        return "v1";
     }
 
     /**

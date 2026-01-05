@@ -5,14 +5,6 @@ module.exports = {
   migrations_directory: './migrations',
   test_directory: './tests',
   networks: {
-    // Default development network (used when no network is specified)
-    development: {
-      privateKey: process.env.PRIVATE_KEY_NILE,
-      consume_user_resource_percent: 50,
-      fee_limit: 1e9,
-      fullHost: process.env.FULL_NODE_NILE || "https://nile.trongrid.io",
-      network_id: '3448148188',
-    },
     prod: {
       privateKey: process.env.PRIVATE_KEY_PROD,
       consume_user_resource_percent: 30,
@@ -33,13 +25,6 @@ module.exports = {
       fee_limit: 1e10,
       fullHost: "https://api.shasta.trongrid.io",
       network_id: "2494104990" // Shasta testnet
-    },
-    local: {
-      privateKey: process.env.PRIVATE_KEY_DEVELOPMENT,
-      consume_user_resource_percent: 30,
-      fee_limit: 1e10,
-      fullHost: process.env.FULL_NODE_DEVELOPMENT,
-      network_id: "*"
     }
   },
   compilers: {

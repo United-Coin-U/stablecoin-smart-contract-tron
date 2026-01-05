@@ -26,26 +26,64 @@ const StablecoinV2Artifact = require('../build/contracts/StablecoinV2.json');
 const ProxyAdminArtifact = require('../build/contracts/ProxyAdmin.json');
 const ProxyArtifact = require('../build/contracts/TransparentUpgradeableProxy.json');
 
-// Configure TronWeb
-const PRIVATE_KEY = process.env.PRIVATE_KEY_NILE;
-const FULL_NODE = process.env.FULL_NODE_NILE || "https://nile.trongrid.io";
+// Parse command line arguments
+function parseArgs() {
+  const args = process.argv.slice(2);
+  let network = 'nile'; // default network
 
-console.log("Connecting to:", FULL_NODE);
+  for (const arg of args) {
+    if (arg.startsWith('--network=')) {
+      network = arg.split('=')[1];
+    }
+  }
+
+  return { network };
+}
+
+const { network } = parseArgs();
+
+// Load network configuration
+const tronboxConfig = require('../tronbox.js');
+const networkConfig = tronboxConfig.networks[network];
+
+if (!networkConfig) {
+  console.error(`❌ Network '${network}' not found in tronbox.js`);
+  console.error(`Available networks: ${Object.keys(tronboxConfig.networks).join(', ')}`);
+  process.exit(1);
+}
+
+const PRIVATE_KEY = networkConfig.privateKey;
+const FULL_NODE = networkConfig.fullHost;
+
+if (!PRIVATE_KEY) {
+  console.error(`❌ Private key not configured for network '${network}'`);
+  process.exit(1);
+}
+
+console.log(`Connecting to: ${FULL_NODE} (Network: ${network})`);
 
 const tronWeb = new TronWeb({
   fullHost: FULL_NODE,
   privateKey: PRIVATE_KEY,
+  headers: { "TRON-PRO-API-KEY": process.env.TRONGRID_API_KEY || '' },
+  timeout: 60000,
 });
 
-// Load deployment info
-const deploymentPath = path.join(__dirname, '../deployments/development.json');
+// Determine deployment file based on network
+let deploymentPath = path.join(__dirname, `../deployments/${network}.json`);
+
+// Fallback to development.json if specific network deployment file doesn't exist
+if (!fs.existsSync(deploymentPath)) {
+  deploymentPath = path.join(__dirname, '../deployments/development.json');
+}
 let deployment;
 
 try {
   deployment = JSON.parse(fs.readFileSync(deploymentPath, 'utf8'));
   console.log("✅ Loaded deployment info\n");
 } catch (err) {
-  console.error("❌ Could not load deployment info. Please run 'tronbox migrate' first.");
+  console.error("❌ Could not load deployment info.");
+  console.error(`   Please run 'tronbox migrate --network=${network}' first.`);
   process.exit(1);
 }
 
