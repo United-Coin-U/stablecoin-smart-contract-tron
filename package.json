@@ -1,0 +1,36 @@
+{
+  "name": "stablecoin-smart-contract-tron",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tronbox compile",
+    "test": "node tests/run-all-tests.js",
+    "test:proxy": "node tests/TestProxy.js",
+    "test:stablecoin": "node tests/TestStablecoin.js",
+    "test:basic": "node tests/test-basic-functions.js",
+    "test:control": "node tests/test-account-control.js",
+    "test:rescue": "node tests/test-rescuable.js",
+    "test:tip712": "node tests/test-tip712.js",
+    "test:eip3009": "node tests/test-eip3009.js",
+    "encode:init": "node tests/EncodeInitData.js",
+    "clean": "rm -rf build/",
+    "deploy:nile": "tronbox migrate --network nile --reset",
+    "deploy:shasta": "tronbox migrate --network shasta --reset",
+    "deploy:prod": "tronbox migrate --network prod --reset",
+    "flatten": "node scripts/flatten.js",
+    "flatten:all": "node scripts/flatten.js Stablecoin && node scripts/flatten.js ProxyAdmin && node scripts/flatten.js TransparentUpgradeableProxy"
+  },
+  "keywords": [],
+  "author": "SML",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "@noble/secp256k1": "^3.0.0",
+    "@openzeppelin/contracts": "^5.4.0",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0",
+    "axios": "^1.13.2",
+    "dotenv": "^17.2.3",
+    "ethers": "^6.16.0",
+    "tronweb": "^6.1.1"
+  }
+}
