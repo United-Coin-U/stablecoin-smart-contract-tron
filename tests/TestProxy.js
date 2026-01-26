@@ -271,7 +271,7 @@ async function main() {
     const stablecoinV2 = await tronWeb.contract(StablecoinV2Artifact.abi, proxyAddress);
 
     // Check V2 specific function
-    const version = await stablecoinV2.versionV2().call();
+    const version = await stablecoinV2.version().call();
     console.log("   V2 Version:", version);
 
     // Verify old data is preserved
@@ -356,7 +356,7 @@ async function main() {
 
     // Verify upgrade to V2
     const stablecoinV2 = await tronWeb.contract(StablecoinV2Artifact.abi, proxyAddress);
-    const version = await stablecoinV2.versionV2().call();
+    const version = await stablecoinV2.version().call();
     console.log("   V2 Version:", version);
 
     // Verify implementation address changed
