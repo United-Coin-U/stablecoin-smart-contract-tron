@@ -288,7 +288,7 @@ abstract contract EIP3009Token {
     }
 
     /**
-     * @dev Cancel an authorization before it's used
+     * @dev Cancel an authorization before it's used. This function is still allowed even when EIP-3009 feature is disabled
      * @param authorizer Address that provided the authorization (must be msg.sender)
      * @param nonce Nonce of the authorization to cancel
      */

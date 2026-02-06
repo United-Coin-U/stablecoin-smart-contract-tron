@@ -56,7 +56,6 @@ abstract contract RescuableToken {
      *
      * Requirements:
      * - Can only be called by the contract owner
-     * - Cannot rescue the stablecoin token itself (prevents owner from stealing user funds)
      * - Token address cannot be zero
      * - Recipient address cannot be zero
      * - Amount must be greater than zero
