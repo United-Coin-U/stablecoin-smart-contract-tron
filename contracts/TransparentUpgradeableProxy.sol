@@ -58,7 +58,6 @@ contract TransparentUpgradeableProxy {
      * @dev Admin-only function to upgrade the implementation.
      */
     function upgradeTo(address newImplementation) external onlyAdmin() {
-        require(msg.sender == _admin(), "TransparentUpgradeableProxy: caller is not admin");
         _setImplementation(newImplementation);
         emit Upgraded(newImplementation);
     }
@@ -67,7 +66,6 @@ contract TransparentUpgradeableProxy {
      * @dev Admin-only function to upgrade the implementation and call data.
      */
     function upgradeToAndCall(address newImplementation, bytes calldata data) external payable onlyAdmin() {
-        require(msg.sender == _admin(), "TransparentUpgradeableProxy: caller is not admin");
         _setImplementation(newImplementation);
         emit Upgraded(newImplementation);
 
