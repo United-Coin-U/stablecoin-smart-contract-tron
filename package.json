@@ -11,13 +11,17 @@
     "test:rescue": "node tests/test-rescuable.js",
     "test:tip712": "node tests/test-tip712.js",
     "test:eip3009": "node tests/test-eip3009.js",
+    "test:autoowner": "node tests/test-auto-owner.js",
     "encode:init": "node tests/EncodeInitData.js",
     "clean": "rm -rf build/",
     "deploy:nile": "tronbox migrate --network nile --reset",
     "deploy:shasta": "tronbox migrate --network shasta --reset",
     "deploy:prod": "tronbox migrate --network prod --reset",
+    "deploy:autoowner:nile": "tronbox migrate --network nile -f 3 --to 3",
+    "deploy:autoowner:shasta": "tronbox migrate --network shasta -f 3 --to 3",
+    "deploy:autoowner:prod": "tronbox migrate --network prod -f 3 --to 3",
     "flatten": "node scripts/flatten.js",
-    "flatten:all": "node scripts/flatten.js Stablecoin && node scripts/flatten.js ProxyAdmin && node scripts/flatten.js TransparentUpgradeableProxy"
+    "flatten:all": "node scripts/flatten.js Stablecoin && node scripts/flatten.js ProxyAdmin && node scripts/flatten.js TransparentUpgradeableProxy && node scripts/flatten.js StablecoinAutoOwner"
   },
   "keywords": [],
   "author": "SML",

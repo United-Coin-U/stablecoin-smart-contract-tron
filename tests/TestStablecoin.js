@@ -13,7 +13,8 @@ const testFiles = [
   'test-account-control.js',
   'test-rescuable.js',
   'test-tip712.js',
-  'test-eip3009.js'
+  'test-eip3009.js',
+  'test-auto-owner.js'
 ];
 
 const network = process.argv.find(arg => arg.startsWith('--network=')) || '--network=nile';
