@@ -28,3 +28,13 @@ yarn-debug.log*
 yarn-error.log*
 
 scripts/generate_init_data.js
+
+foundry.lock
+package-lock.json
+
+tests/
+test/
+.claude/
+.gitignore
+
+
