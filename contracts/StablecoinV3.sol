@@ -32,7 +32,9 @@ import "./StablecoinV2.sol";
  * When adding new state variables in a future upgrade (V4, etc.):
  * 1. Add new variables BEFORE `__gapV3`
  * 2. Reduce `__gapV3` by the number of slots used
- * 3. Verify with `forge inspect StablecoinV4 storage-layout`
+ * 3. Re-derive the layout before deploying — this repo has no tool wired up for
+ *    it, so compute it by hand from the inheritance chain above, or point a
+ *    throwaway solc/foundry checkout at contracts/ and read its storage layout.
  */
 contract StablecoinV3 is StablecoinV2 {
 

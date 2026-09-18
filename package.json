@@ -13,7 +13,6 @@
     "test:eip3009": "node tests/test-eip3009.js",
     "test:autoowner": "node tests/test-auto-owner.js",
     "test:ccip": "node tests/test-ccip.js",
-    "test:forge": "forge test",
     "encode:init": "node tests/EncodeInitData.js",
     "encode:init:v3": "node scripts/generate_init_data_v3.js",
     "clean": "rm -rf build/",
