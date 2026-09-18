@@ -1,5 +1,9 @@
 require('dotenv').config();
 
+const trongridHeaders = process.env.TRONGRID_API_KEY
+  ? { 'TRON-PRO-API-KEY': process.env.TRONGRID_API_KEY }
+  : undefined;
+
 module.exports = {
   contracts_directory: './contracts',
   migrations_directory: './migrations',
@@ -10,6 +14,7 @@ module.exports = {
       consume_user_resource_percent: 30,
       fee_limit: 1e10, // Increased to 10000 TRX for deployment
       fullHost: process.env.FULL_NODE_PROD,
+      headers: trongridHeaders,
       network_id: "728126428" // TRON Mainnet ChainID (0x2b6653dc)
     },
     nile: {
@@ -17,6 +22,7 @@ module.exports = {
       consume_user_resource_percent: 50,
       fee_limit: 1e9,
       fullHost: process.env.FULL_NODE_NILE,
+      headers: trongridHeaders,
       network_id: '3448148188',
     },
     shasta: {
@@ -24,6 +30,7 @@ module.exports = {
       consume_user_resource_percent: 30,
       fee_limit: 1e10,
       fullHost: "https://api.shasta.trongrid.io",
+      headers: trongridHeaders,
       network_id: "2494104990" // Shasta testnet
     }
   },
