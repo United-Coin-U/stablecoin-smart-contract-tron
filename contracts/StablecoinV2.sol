@@ -15,7 +15,7 @@ contract StablecoinV2 is Stablecoin {
      * Overrides the parent contract's version.
      * @return Version string
      */
-    function version() public pure override returns (string memory) {
+    function version() public pure virtual override returns (string memory) {
         return "v2";
     }
 
